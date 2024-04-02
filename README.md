@@ -1,4 +1,4 @@
-## 代码解释
+## 代码解释 (By ChatGPT)
 这段代码实现了一个类似于ChatGPT的聊天机器人。下面是对代码的逐行解释：
 
 1. `from openai import OpenAI`: 导入名为OpenAI的自定义模块，用于与OpenAI API进行交互。
