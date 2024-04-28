@@ -5,7 +5,6 @@ import speech_recognition as sr
 from pathlib import Path
 import os
 
-
 st.title("CityU STEM Challenge - LLM Model")
 
 client = OpenAI(api_key=st.secrets["openai_api"])
