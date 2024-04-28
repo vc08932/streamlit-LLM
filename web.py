@@ -2,6 +2,9 @@ from openai import OpenAI
 import streamlit as st
 from audio_recorder_streamlit import audio_recorder
 import speech_recognition as sr
+from pathlib import Path
+import os
+
 
 st.title("CityU STEM Challenge - LLM Model")
 
@@ -17,8 +20,20 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"]) # Print message
 st.write(st.session_state["openai_model"])
-response="gpt response"
 
+tts=st.checkbox("Text to Voice",)
+def text_to_speech(text, path): #text to speech   
+    # 替换为您的 OpenAI API 密钥
+    response = client.audio.speech.create(
+        model="tts-1",
+        voice="alloy",
+        input=text
+    )
+    speech_file_path = "speech.mp3"
+    with open(speech_file_path, 'wb') as file:
+        file.write(response.content)
+        
+response="gpt response"
 def callgpt(): # Call openai's api
     with st.chat_message("assistant"):
         stream = client.chat.completions.create(
@@ -33,6 +48,9 @@ def callgpt(): # Call openai's api
         )
         global response
         response= st.write_stream(stream)
+        if tts:
+            text_to_speech(response,"speech.mp3")
+            st.audio("speech.mp3", format="audio/mpeg", loop=False)
 
 preset_prompt = """你是一个电脑专家，你要以浅白的语言和详细的说明，教导弱势社群（不熟悉科技/互联网产品）
 如何使用电子设备和软件，对于专有名词，你要另外用括号包裹着解释；以及每个步骤都尝试延伸拓展说明，以期让用户明白你说的话；还要用点列式的方法排版。\n"""
