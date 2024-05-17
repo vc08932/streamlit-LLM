@@ -5,9 +5,9 @@ import speech_recognition as sr
 from pathlib import Path
 import os
 
-st.title("CityU STEM Challenge - LLM Model")
+st.title("你的数码小助手")
 
-client = OpenAI(api_key=st.secrets["openai_api"])
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 if "openai_model" not in st.session_state:
     st.session_state["openai_model"] = "gpt-4" # Set model
