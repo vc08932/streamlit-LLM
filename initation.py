@@ -5,12 +5,12 @@ if os.path.exists(".streamlit/secrets.toml") == False:
     print("---\nInput a login password to prevent unexpected access")
     password = input("Password: ")
     
-    if os.path.exists(".streamlit") == False: # Detect the existance of the folder
+    if os.path.exists(".streamlit") == False: # Detect image.pngthe existance of the folder
         os.makedirs(".streamlit")
         
     with open(".streamlit/secrets.toml","w") as keyfile:
         keyfile.write("openai_api =" + "'" + key + "'")
-        keyfile.write("login =" + "'" + password + "'")
+        keyfile.write("\nlogin =" + "'" + password + "'")
         print("OpenAI api Key and password is successfully configured.")
         
 else:
