@@ -31,3 +31,9 @@ with st.form("Quiz"):
     if  st.form_submit_button("递交", type = "primary") == True:
         st.subheader(f":blue[你的分数：**{score}**]")
         
+    if score >= 5:
+        st.page_link("pages/03expert.py", label="你已经是熟练级别了")
+    elif score >=3 :
+        st.page_link("pages/02intermediate.py", label="你已经到了已入门级别了")
+    elif score >=0:
+        st.page_link("pages/01begin.py", label="你看来不是很熟悉大语言模型了")
