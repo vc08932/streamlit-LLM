@@ -1,5 +1,6 @@
 import streamlit as st
 from openai import OpenAI
+import logging
 
 st.set_page_config(
     page_title="Index",
@@ -7,6 +8,26 @@ st.set_page_config(
 )
 st.title("Your Digital Assistant")
 
+# 创建日志配置函数
+def setup_logger():
+    if 'logger_configured' not in st.session_state:
+        log_format = '%(asctime)s - %(levelname)s - %(message)s'
+        formatter = logging.Formatter(log_format)
+        
+        # 创建一个文件处理器，并赋予一个唯一的名称
+        file_handler = logging.FileHandler('st_log.log')
+        file_handler.setLevel(logging.NOTSET)
+        file_handler.setFormatter(formatter)
+        file_handler_name = 'streamlit_file_handler'
+
+        streamlit_root_logger = logging.getLogger(st.__name__)
+
+        # 检查处理器是否已经存在
+        if not any(handler.get_name() == file_handler_name for handler in streamlit_root_logger.handlers):
+            file_handler.set_name(file_handler_name)
+            streamlit_root_logger.addHandler(file_handler)
+        
+        st.session_state['logger_configured'] = True
 
 if "login_status" not in st.session_state or st.session_state["login_status"] == False:
     with st.form("login"):
@@ -54,3 +75,12 @@ if st.session_state["login_status"] == True:
         st.switch_page("pages/03expert.py")
         
     st.page_link("pages/04quiz.py", label="❓ 不知道自己水平？请点击这里")
+
+
+
+# 在应用启动时配置日志
+setup_logger()
+
+# 使用日志记录器
+streamlit_root_logger = logging.getLogger(st.__name__)
+streamlit_root_logger.info("enter st_main_and_segment page")

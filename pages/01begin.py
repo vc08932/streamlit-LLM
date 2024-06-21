@@ -4,6 +4,35 @@ from audio_recorder_streamlit import audio_recorder
 import speech_recognition as sr
 from pathlib import Path
 import os
+import logging
+
+# 创建日志配置函数
+def setup_logger():
+    if 'logger_configured' not in st.session_state:
+        log_format = '%(asctime)s - %(levelname)s - %(message)s'
+        formatter = logging.Formatter(log_format)
+        
+        # 创建一个文件处理器，并赋予一个唯一的名称
+        file_handler = logging.FileHandler('st_log.log')
+        file_handler.setLevel(logging.NOTSET)
+        file_handler.setFormatter(formatter)
+        file_handler_name = 'streamlit_file_handler'
+
+        streamlit_root_logger = logging.getLogger(st.__name__)
+
+        # 检查处理器是否已经存在
+        if not any(handler.get_name() == file_handler_name for handler in streamlit_root_logger.handlers):
+            file_handler.set_name(file_handler_name)
+            streamlit_root_logger.addHandler(file_handler)
+        
+        st.session_state['logger_configured'] = True
+
+# 在应用启动时配置日志
+setup_logger()
+
+# 使用日志记录器
+streamlit_root_logger = logging.getLogger(st.__name__)
+streamlit_root_logger.info("enter st_main_and_segment page")
 
 st.title("你的数码小助手")
 client = OpenAI(api_key=st.secrets["openai_api"])
