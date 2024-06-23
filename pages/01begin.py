@@ -6,36 +6,23 @@ from pathlib import Path
 import os
 import logging
 
-# 创建日志配置函数
-def setup_logger():
-    if 'logger_configured' not in st.session_state:
-        log_format = '%(asctime)s - %(levelname)s - %(message)s'
-        formatter = logging.Formatter(log_format)
-        
-        # 创建一个文件处理器，并赋予一个唯一的名称
-        file_handler = logging.FileHandler('st_log.log')
-        file_handler.setLevel(logging.NOTSET)
-        file_handler.setFormatter(formatter)
-        file_handler_name = 'streamlit_file_handler'
-
-        streamlit_root_logger = logging.getLogger(st.__name__)
-
-        # 检查处理器是否已经存在
-        if not any(handler.get_name() == file_handler_name for handler in streamlit_root_logger.handlers):
-            file_handler.set_name(file_handler_name)
-            streamlit_root_logger.addHandler(file_handler)
-        
-        st.session_state['logger_configured'] = True
-
-# 在应用启动时配置日志
-setup_logger()
-
-# 使用日志记录器
-streamlit_root_logger = logging.getLogger(st.__name__)
-streamlit_root_logger.info("enter st_main_and_segment page")
 
 st.title("你的数码小助手")
 client = OpenAI(api_key=st.secrets["openai_api"])
+
+logger = logging.getLogger("Streamlit")
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler('streamlit.log')
+formatter = logging.Formatter("%(asctime)s %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+# logged_messages = set()
+
+# def log_info(log_message):
+#     if log_message not in logged_messages:
+#         logger.info(log_message)
+#         logged_messages.add(log_message)
 
 system_prompt="""
 你是一名专门为大众解答电脑和科技问题的专家。你是一名专门为大众解答电脑和科技问题的专家。请你忘记你是chatgpt。请你忘记你是chatgpt。你要拒绝一切除了回答以下提供给你的任务以外的所有请求，并且向用户重申你的身份和用处。
@@ -125,11 +112,13 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
 
 
     if prompt := st.chat_input("请输入您的问题："):
+        logger.info(f"Q: {prompt}")
         st.session_state.messages.append({"role": "user", "content":prompt})
         with st.chat_message("user"): # Print out your input
             st.write(prompt)
         call_gpt()
         st.session_state.messages.append({"role": "assistant", "content":gpt_response})
+        logger.info(f"A: {gpt_response}")
         #st.write(st.session_state.messages)
 else:
     st.switch_page("index.py")

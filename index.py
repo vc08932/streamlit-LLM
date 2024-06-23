@@ -1,6 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 import logging
+import os 
 
 st.set_page_config(
     page_title="Index",
@@ -8,26 +9,19 @@ st.set_page_config(
 )
 st.title("Your Digital Assistant")
 
-# 创建日志配置函数
-def setup_logger():
-    if 'logger_configured' not in st.session_state:
-        log_format = '%(asctime)s - %(levelname)s - %(message)s'
-        formatter = logging.Formatter(log_format)
-        
-        # 创建一个文件处理器，并赋予一个唯一的名称
-        file_handler = logging.FileHandler('st_log.log')
-        file_handler.setLevel(logging.NOTSET)
-        file_handler.setFormatter(formatter)
-        file_handler_name = 'streamlit_file_handler'
+logger = logging.getLogger("Streamlit")
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler('streamlit.log')
+formatter = logging.Formatter("%(asctime)s %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
-        streamlit_root_logger = logging.getLogger(st.__name__)
+# logged_messages = set()
 
-        # 检查处理器是否已经存在
-        if not any(handler.get_name() == file_handler_name for handler in streamlit_root_logger.handlers):
-            file_handler.set_name(file_handler_name)
-            streamlit_root_logger.addHandler(file_handler)
-        
-        st.session_state['logger_configured'] = True
+# def log_info(log_message):
+#     if log_message not in logged_messages:
+#         logger.info(log_message)
+#         logged_messages.add(log_message)
 
 if "login_status" not in st.session_state or st.session_state["login_status"] == False:
     with st.form("login"):
@@ -37,6 +31,8 @@ if "login_status" not in st.session_state or st.session_state["login_status"] ==
         
         if submit == True and password == st.secrets["login"]:
             st.session_state["login_status"] = True
+            #logger.info("Login")
+            logger.info("Login")
             st.rerun()
         else:
             st.session_state["login_status"] = False 
@@ -44,6 +40,7 @@ if "login_status" not in st.session_state or st.session_state["login_status"] ==
             if submit == True and password != st.secrets["login"]: 
                 # Only display with wrong password input
                 st.write(":red[Wrong password.Please try again]")
+                logger.info("Failed login")
 
 if st.session_state["login_status"] == True:
     st.toast('Successfully logged in', icon="✅")
@@ -66,21 +63,22 @@ if st.session_state["login_status"] == True:
                     "懂得提示词的基本概念、有意识使用提示词", 
                     "熟练使用提示词来获取想要的回应"],
         index = None) # Set preselected option be None
-
+    
+    # if level is not None:
+    #     log_info(f"Choice :{level}")
+        
+        
     if level == "🟡 不懂":
+        logger.info(f"Choice :{level}")
         st.switch_page("pages/01begin.py")
+        
     elif level == "🟢 已入门":
+        logger.info(f"Choice :{level}")
         st.switch_page("pages/02intermediate.py")
+        
     elif level == "🔵 熟练":
+        logger.info(f"Choice :{level}")
         st.switch_page("pages/03expert.py")
         
     st.page_link("pages/04quiz.py", label="❓ 不知道自己水平？请点击这里")
 
-
-
-# 在应用启动时配置日志
-setup_logger()
-
-# 使用日志记录器
-streamlit_root_logger = logging.getLogger(st.__name__)
-streamlit_root_logger.info("enter st_main_and_segment page")

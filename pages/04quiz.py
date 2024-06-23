@@ -1,8 +1,29 @@
 import streamlit as st 
 import json
 import time
+import logging
 
 
+logger = logging.getLogger("Streamlit")
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler('streamlit.log')
+formatter = logging.Formatter("%(asctime)s %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+# logged_messages = set()
+
+# def log_info(log_message):
+#     if log_message not in logged_messages:
+#         logger.info(log_message)
+#         logged_messages.add(log_message)
+
+
+# if 'logger' not in st.session_state:
+#     st.session_state['logger'] = st_log.create_logger(name = 'app', level = 'INFO')
+# logger = st.session_state['logger']
+# print(st.session_state['logger'])
+   
 def redirect():
     if st.session_state["level"][0] == "begin":
         st.switch_page("pages/01begin.py")
@@ -40,8 +61,13 @@ else:
             if question == ques[i]["Choice"][ans_index]:
                 st.write(":red[✅ 恭喜你，答对了]")
                 score += 1
+                logger.info(f"QuizAns: {question}")
+                #log_info(f"QuizAns: {question}")
                 
             elif question is not None:
+                logger.info(f"QuizAns: {question}")
+                
+                #log_info(f"QuizAns: {question}")
                 st.write(":grey[❌ 没关系，再接再厉]")
                 st.markdown(f'正确答案是 **{ques[i]["Choice"][ans_index]}**')
                      
