@@ -14,8 +14,7 @@ jobs:
      runs-on: ubuntu-latest
      steps:
        - name: 'xecute command'
-         env:
-           MY_SITE: ${{ secrets.SITE }}
+
          # 向站点发送 GET 请求
          run: |                                   
-           curl $MY_SITE
+           curl https://digital-assistant.streamlit.app/
