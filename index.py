@@ -29,7 +29,7 @@ if "login_status" not in st.session_state or st.session_state["login_status"] ==
         password = st.text_input("**Password**", type = "password", autocomplete ="password")
         submit = st.form_submit_button()
         
-        if submit == True and password == st.secrets["login"]:
+        if submit == True and password.strip() == st.secrets["login"]:
             st.session_state["login_status"] = True
             #logger.info("Login")
             logger.info("Login")
