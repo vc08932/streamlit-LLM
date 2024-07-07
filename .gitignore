@@ -1,6 +1,6 @@
 *.toml
 *.mp3
 *.wav
-unfinished/
+untracked/
 *.log
  __pycache__/

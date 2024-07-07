@@ -24,22 +24,17 @@ logger.addHandler(handler)
 # logger = st.session_state['logger']
 # print(st.session_state['logger'])
    
-def redirect():
-    if st.session_state["level"][0] == "begin":
-        st.switch_page("pages/01begin.py")
-    elif st.session_state["level"][0] ==  "intermediate":
-        st.switch_page("pages/02intermediate.py")
-    elif st.session_state["level"][0] ==  "expert":
-        st.switch_page("pages/03expert.py")
+# def redirect():
+#     st.switch_page("pages/chatbot.py")
         
         
 if "level" not in st.session_state:
     st.session_state.level = []
     
-elif len(st.session_state.level) > 1:
-        st.success(f" **你已经填写过了，请回到你原本的页面**",icon = "⭕")
+elif len(st.session_state.level) >= 1:
+        st.success(f" **你已經填寫過了，請回到你原本的頁面**",icon = "⭕")
         time.sleep(1)
-        redirect()
+        st.switch_page("pages/chatbot.py")
         
 else:
     with st.form("Quiz"):
@@ -59,7 +54,7 @@ else:
             
             ans_index = int(ques[i]["Ans"])
             if question == ques[i]["Choice"][ans_index]:
-                st.write(":red[✅ 恭喜你，答对了]")
+                st.write(":red[✅ 恭喜你，答對了]")
                 score += 1
                 logger.info(f"QuizAns: {question}")
                 #log_info(f"QuizAns: {question}")
@@ -68,30 +63,30 @@ else:
                 logger.info(f"QuizAns: {question}")
                 
                 #log_info(f"QuizAns: {question}")
-                st.write(":grey[❌ 没关系，再接再厉]")
+                st.write(":grey[❌ 沒關係，再接再厲]")
                 st.markdown(f'正确答案是 **{ques[i]["Choice"][ans_index]}**')
                      
                 
             st.divider()
         
                 
-        if  st.form_submit_button("递交", type = "primary") == True:         
+        if  st.form_submit_button("遞交", type = "primary") == True:         
             
-            st.subheader(f":blue[你的分数：**{score}**]")
+            st.subheader(f":blue[你的分數：**{score}**]")
         
             if score >= 5:
-                st.page_link("pages/03expert.py", label="**你已经是熟练级别了**")
+                st.page_link("pages/chatbot.py", label="**你已經是熟練級別了**")
                 st.session_state.level.append("expert")
                 
             elif score >=3 :
-                st.page_link("pages/02intermediate.py", label="**你已经到了已入门级别了**")
+                st.page_link("pages/chatbot.py", label="**你已經到了已入門等級了**")
                 st.session_state.level.append("intermediate")
                 
             elif score >=0:
-                st.page_link("pages/01begin.py", label="**你看来不是很熟悉大语言模型了**")
+                st.page_link("pages/chatbot.py", label="**你看來不是很熟悉大語言模型了**")
                 st.session_state.level.append("begin")
 
-            st.toast("请点击按钮跳转到指定页面，否则将在 10 秒后自动跳转",icon = "💬")
+            st.toast("請點擊按鈕跳到指定頁面，否則將在 10 秒後自動跳轉",icon = "💬")
             
             time.sleep(10)
-            redirect()
+            st.switch_page("pages/chatbot.py")

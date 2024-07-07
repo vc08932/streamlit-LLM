@@ -5,7 +5,7 @@
 git clone https://github.com/vc08932/streamlit-LLM # Download the code
 cd streamlit-LLM 
 pip install -r requirements.txt 
-python.exe initation.py # Configure the OpenAI api key
+python.exe initation.py # Configure the OpenAI api key and password
 ```
 
 ## 使用
