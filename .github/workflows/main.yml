@@ -1,19 +1,19 @@
 name: 'Streamlit Community Cloud Wake'
 
- # 触发条件
 on:
   push:
   watch:
     types: [started]
   schedule:
-    - cron: '0 1 * * *'  # 每天凌晨 1 点执行
+    - cron: '0 1 * * *'  # 每天凌晨 1 点执行（美國時間）
 
 jobs:
   curl-my-site:
      runs-on: ubuntu-latest
      steps:
-       - name: 'xecute command'
-
-         # 向站点发送 GET 请求
-         run: |                                   
+       - name: 'Execute command'
+         run: |
            curl https://digital-assistant.streamlit.app/
+       - name: 'Check response'
+         run: |
+           curl -I https://digital-assistant.streamlit.app/
