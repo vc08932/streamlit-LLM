@@ -1,6 +1,6 @@
 from openai import OpenAI
 import streamlit as st
-from audio_recorder_streamlit import audio_recorder
+#from audio_recorder_streamlit import audio_recorder
 import speech_recognition as sr
 from pathlib import Path
 import os
@@ -16,7 +16,7 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 
-st.set_page_config(page_title = "Your Digital Assistant")
+st.set_page_config(page_title = "Your Digital Assistant", initial_sidebar_state = "collapsed")
 st.title("你的數碼小助手 Your Digital Assistant")
 
 
@@ -95,10 +95,13 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
 
         container1 = st.container(height=300)
         user_query = st.chat_input("Type your message here...")
-
+        
         # session state
         if len(msgs.messages) == 0:
             msgs.add_ai_message("你好，我們有什麼可以幫您的？")
+        
+        
+
             
         for msg in msgs.messages:
                 container1.chat_message(avatars[msg.type]).write(msg.content)
@@ -110,3 +113,6 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
                         response = coversation_chain.run(user_query)
                         st.write(response)
 
+else:
+    st.info("請先登錄")
+    st.switch_page("index.py")

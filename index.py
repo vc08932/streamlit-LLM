@@ -6,6 +6,7 @@ import os
 st.set_page_config(
     page_title="Index",
     page_icon="👋",
+    initial_sidebar_state = "collapsed"
 )
 st.title("你的數碼小助手 Your Digital Assistant")
 

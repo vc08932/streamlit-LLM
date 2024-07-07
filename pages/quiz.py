@@ -26,7 +26,7 @@ logger.addHandler(handler)
    
 # def redirect():
 #     st.switch_page("pages/chatbot.py")
-        
+st.set_page_config(initial_sidebar_state = "collapsed")    
         
 if "level" not in st.session_state:
     st.session_state.level = []
