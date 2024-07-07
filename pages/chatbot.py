@@ -1,6 +1,5 @@
 from openai import OpenAI
 import streamlit as st
-#from audio_recorder_streamlit import audio_recorder
 import speech_recognition as sr
 from pathlib import Path
 import os
@@ -15,6 +14,8 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
+from audiorecorder import audiorecorder
+
 
 st.set_page_config(page_title = "Your Digital Assistant", initial_sidebar_state = "collapsed")
 st.title("你的數碼小助手 Your Digital Assistant")
@@ -95,14 +96,32 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
 
         container1 = st.container(height=300)
         user_query = st.chat_input("Type your message here...")
-        
+        audio = audiorecorder("Click to record", "Click to stop recording",pause_prompt="", show_visualizer=True)
+
+        if len(audio) > 0:
+            # To save audio to a file, use pydub export method:
+            audio.export("audio.wav", format="wav")
+  
+            recognizer =sr.Recognizer()
+            
+            voice_to_text= "" #initialize
+            
+            with sr.AudioFile("audio.wav") as source :
+                audio = recognizer.record(source)
+            try:
+                voice_to_text = recognizer.recognize_google(audio, language='zh-CN')
+                user_query = voice_to_text 
+            except sr.UnknownValueError:
+                voice_to_text ='Google Speech Recognition could not understand audio'
+                
+            except sr.RequestError as e:
+                voice_to_text ='could not request results from Google speech Recognition service'
+              
+                
         # session state
         if len(msgs.messages) == 0:
             msgs.add_ai_message("你好，我們有什麼可以幫您的？")
         
-        
-
-            
         for msg in msgs.messages:
                 container1.chat_message(avatars[msg.type]).write(msg.content)
 
