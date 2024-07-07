@@ -2,3 +2,4 @@ openai
 streamlit 
 SpeechRecognition
 audio_recorder_streamlit
+langchain==0.0.345
