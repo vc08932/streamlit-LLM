@@ -115,10 +115,10 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
                 user_query = voice_to_text
                 
             except sr.UnknownValueError:
-                voice_to_text ='Google Speech Recognition could not understand audio'
+                st.error('錯誤：無法識別音頻')
                 
             except sr.RequestError as e:
-                voice_to_text ='could not request results from Google speech Recognition service'
+                st.error('錯誤：無法連接服務')
                 
         # session state
         if len(msgs.messages) == 0:
