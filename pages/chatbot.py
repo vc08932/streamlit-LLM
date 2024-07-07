@@ -14,7 +14,7 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
-from audiorecorder import audiorecorder
+from audio_recorder_streamlit import audio_recorder
 
 
 st.set_page_config(page_title = "Your Digital Assistant", initial_sidebar_state = "collapsed")
@@ -96,27 +96,29 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
 
         container1 = st.container(height=300)
         user_query = st.chat_input("Type your message here...")
-        audio = audiorecorder("Click to record", "Click to stop recording",pause_prompt="", show_visualizer=True)
-
-        if len(audio) > 0:
-            # To save audio to a file, use pydub export method:
-            audio.export("audio.wav", format="wav")
-  
+        
+        audio_record = audio_recorder(text="",icon_size="2x") 
+        voice_to_text="" #initialise
+        
+        if audio_record:
+            with open("audio_file.wav", "wb") as f:
+                f.write(audio_record)
+                
             recognizer =sr.Recognizer()
             
-            voice_to_text= "" #initialize
-            
-            with sr.AudioFile("audio.wav") as source :
+            with sr.AudioFile("audio_file.wav") as source :
                 audio = recognizer.record(source)
+                
             try:
                 voice_to_text = recognizer.recognize_google(audio, language='zh-CN')
-                user_query = voice_to_text 
+                
+                user_query = voice_to_text
+                
             except sr.UnknownValueError:
                 voice_to_text ='Google Speech Recognition could not understand audio'
                 
             except sr.RequestError as e:
                 voice_to_text ='could not request results from Google speech Recognition service'
-              
                 
         # session state
         if len(msgs.messages) == 0:
