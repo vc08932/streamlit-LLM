@@ -93,8 +93,8 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
 
     with st.container():
 
-
-        container1 = st.container(height=300)
+        recognizer_state = "finish"
+        container1 = st.container(height=600)
         user_query = st.chat_input("Type your message here...")
         
         audio_record = audio_recorder(text="",icon_size="2x") 
@@ -112,13 +112,15 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
             try:
                 voice_to_text = recognizer.recognize_google(audio, language='zh-CN')
                 
-                user_query = voice_to_text
+                recognizer_state = "success"
                 
             except sr.UnknownValueError:
                 st.error('錯誤：無法識別音頻')
+                recognizer_state = "UnknownValueError"
                 
             except sr.RequestError as e:
                 st.error('錯誤：無法連接服務')
+                recognizer_state = "RequestError"
                 
         # session state
         if len(msgs.messages) == 0:
@@ -130,9 +132,17 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
         if user_query:
             container1.chat_message("user").write(user_query)
             with container1.chat_message("assistant"):
-                    with st.spinner("Typing..."):
-                        response = coversation_chain.run(user_query)
-                        st.write(response)
+                with st.spinner("Typing..."):
+                    response = coversation_chain.run(user_query)
+                    st.write(response)
+        
+        elif audio_record and recognizer_state == "success":
+            container1.chat_message("user").write(voice_to_text)
+            with container1.chat_message("assistant"):
+                with st.spinner("Typing..."):
+                    response = coversation_chain.run(voice_to_text)
+                    st.write(response)
+                    recognizer_state = "finish"
 
 else:
     st.info("請先登錄")
