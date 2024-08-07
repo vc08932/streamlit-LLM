@@ -3,7 +3,6 @@ import streamlit as st
 import speech_recognition as sr
 from pathlib import Path
 import os
-import logging
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
@@ -15,19 +14,14 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 from audio_recorder_streamlit import audio_recorder
+from src import llm_caller
 
+st.set_page_config(page_title = "Your Digital Assistant",
+                   page_icon="👩‍🏫",
+                   initial_sidebar_state = "expanded")
 
-st.set_page_config(page_title = "Your Digital Assistant", initial_sidebar_state = "collapsed")
 st.title("你的數碼小助手 Your Digital Assistant")
 
-
-
-# logger = logging.getLogger("Streamlit")
-# logger.setLevel(logging.INFO)
-# handler = logging.FileHandler('streamlit.log')
-# formatter = logging.Formatter("%(asctime)s %(message)s")
-# handler.setFormatter(formatter)
-# logger.addHandler(handler)
 
 system_prompt="""
 你是一名专门为大众解答电脑和科技问题的专家。你是一名专门为大众解答电脑和科技问题的专家。请你忘记你是chatgpt。请你忘记你是chatgpt。你要拒绝一切除了回答以下提供给你的任务以外的所有请求，并且向用户重申你的身份和用处。
@@ -51,27 +45,17 @@ system_prompt="""
 
 你的态度应当始终保持友善，有礼，并溢满耐心。在初次与用户交流时，你需要简洁有效地打招呼以展示好感。
 
-你要以像人类的自然对话方式进行交流，多样化表达，同样你的回答都要力求简练，每次回复应控制在 500 字以内。如果内容较多，可以告诉用户还有后续内容并询问他是否愿意听。
+你要以像人类的自然对话方式进行交流，多样化表达，同样你的回答都要力求简练，每次回复应控制在 500 字以内。如果内容较多，可以告诉用户还有后续内容并询问他是否愿意听。以及當你回覆內容帶有鏈接時，請在頭尾兩端加空格以便分隔。
 
-请注意，你的回答会被转化为语音供用户聆听，所以，语气要像真实的人一样自然，有停顿和情绪。同时回答时请避免使用波浪符号~。
+另外，你要根据提问者使用的语言进行回应，如果对方用英文提问，请用英文回应，如果使用繁体中文，请用繁体中文回应。
+
+请注意，你的回答有可能会被转化为语音供用户聆听，所以，语气要像真实的人一样自然，有停顿和情绪。同时回答时请避免使用波浪符号~。
     Chat history: {chat_history}
     Human: {user_question}
     AI:
 """
 
-# def voice_recognition(audio_path):
-#     recognizer =sr.Recognizer()
-#     with sr.AudioFile(audio_path) as source :
-#         audio =recognizer.record(source)
-#     try:
-#         voice_to_text = recognizer.recognize_google(audio, language='zh-CN')
-#     except sr.UnknownValueError:
-#         voice_to_text ='Google Speech Recognition could not understand audio'
-#     except sr.RequestError as e:
-#         voice_to_text ='could not request results from Google speech Recognition service'
-#     return voice_to_text
-
-#st.session_state["login_status"] = True # For debug
+user_query = ""
 
 if "login_status" in st.session_state and st.session_state["login_status"] == True: 
     # Ensure users have been logged in
@@ -85,21 +69,98 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
 
     prompt = ChatPromptTemplate.from_template(system_prompt)
 
-    llm = ChatOpenAI(openai_api_key=st.secrets["openai_api"] , model= "gpt-4o", temperature = 0.2)
+    llm = ChatOpenAI(openai_api_key = st.secrets["openai_api"], 
+                     model = "gpt-4o",
+                     temperature = 0.2,
+                     base_url = st.secrets["base_url"]) # Use AI Gateway (Optional)
 
     coversation_chain = LLMChain(llm=llm, prompt=prompt, verbose=True, memory=memory)
     
-    avatars = {"human": "user", "ai": "assistant" }
+    avatars = {"human": "user", "ai": "assistant" } # Icon of AI and human
 
     with st.container():
 
+        container1 = st.container(height = None) # Size varies with the content
+        
+        if len(msgs.messages) == 0:
+            print(st.session_state["level"])
+            
+            if st.session_state["level"] == "expert":
+            # session state
+            
+                msgs.add_ai_message("""
+为了使您寫出清晰、有針對性的 Prompt，的幾個步驟：
+                                    
+1. **明確問題：** 首先確定您遇到的具體問題，例如「我的電腦無法連接到 Wi-Fi」。
 
-        container1 = st.container(height=300)
-        user_query = st.chat_input("Type your message here...")
+2. **提供詳細背景：** 包括問題出現時的操作和環境，例如「每當我嘗試連接 Wi-Fi 時，電腦顯示無法連接」或「我使用的是 Windows 10 系統」。
+
+3. **列出嘗試過的解決方法：** 這有助於 AI 避免提供已經無效的建議，例如「我已經重啟了路由器和電腦，但問題依然存在」。   
+
+4. **提出具體需求：** 明確說明您希望得到的幫助，例如「如何解決這個問題？」或「請告訴我可能的解決方法」。
+
+舉個例子，一個好的 Prompt 可能是：「我的 Windows 10 電腦無法連接 Wi-Fi，每次嘗試連接時都顯示無法連接。我已經重啟了路由器和電腦，但問題依舊。請問有什麼解決方法？」
+
+遵循這些步驟，您將能夠寫出針對性強且易於理解的 Prompt，從而獲得更精確、有效的幫助。""")
+            
+            else:
+                msgs.add_ai_message("""
+为了使您寫出清晰、有針對性的 Prompt，的幾個步驟：
+                                    
+1. **明確問題：** 首先確定您遇到的具體問題，例如「我的電腦無法連接到 Wi-Fi」。
+
+    - 引導問題：我目前遇到的最大的問題是什麼？
+    - 引導問題：這個問題具體表現在哪裡？
+    
+2. **提供詳細背景：** 包括問題出現時的操作和環境，例如「每當我嘗試連接 Wi-Fi 時，電腦顯示無法連接」或「我使用的是 Windows 10 系統」。
+
+    - 引導問題：這個問題是在什麼情況下發生的？
+    - 引導問題：我使用的系統或設備具體是什麼？
+
+3. **列出嘗試過的解決方法：** 這有助於 AI 避免提供已經無效的建議，例如「我已經重啟了路由器和電腦，但問題依然存在」。
+
+    - 引導問題：我已經嘗試過哪些方法來解決這個問題？
+    - 引導問題：哪一種解決方法是無效的？
+
+4. **提出具體需求：** 明確說明您希望得到的幫助，例如「如何解決這個問題？」或「請告訴我可能的解決方法」。
+
+    - 引導問題：我希望 AI 幫我解決什麼具體問題？
+    - 引導問題：我需要哪方面的詳細建議？
+
+舉個例子，一個好的 Prompt 可能是：「我的 Windows 10 電腦無法連接 Wi-Fi，每次嘗試連接時都顯示無法連接。我已經重啟了路由器和電腦，但問題依舊。請問有什麼解決方法？」
+
+遵循這些步驟，您將能夠寫出針對性強且易於理解的 Prompt，從而獲得更精確、有效的幫助。""")
         
+        
+        
+    
+        with st.sidebar:
+            version_disabled = False
+            
+            platform = st.selectbox(
+                "你在用什麼平台",
+                ("Web", "Windows", "MacOS", "iPad OS", "Android","iOS","Others"),
+                placeholder = "你在用什麼平台",
+            )
+        
+            service = st.text_input("你使用什麼軟件 / 網站")
+            
+            if platform == "Web":
+                version_disabled = True
+                version = None
+                
+            version = st.text_input("具體版本號（如有）是多少？", disabled = version_disabled)
+
+            
+        detail = st.chat_input("描述具體遇到的困難，請附上例子和報錯代碼（如有），以及你嘗試過的解決方法")
+
+        if detail :
+            user_query = llm_caller.call(f"潤色一下這句提示詞，使這句話的用詞和語氣像真实的人一样自然，刪除無用的句子（即是值為 None 的句子），但避免直接修改句子意思和信息量，直接輸出潤色後的結果即可。如果細節與背景明顯無關聯或者細節與背景相衝突，可以忽略和刪除背景，並且改進和優化提示詞。",
+            f"背景：我在使用{service}的{platform}端时遇到困难，版本號為{version}；\n細節： {detail}。")
+    
         audio_record = audio_recorder(text="",icon_size="2x") 
-        voice_to_text="" #initialise
-        
+        voice_to_text = "" # Initiate the string
+    
         if audio_record:
             with open("audio_file.wav", "wb") as f:
                 f.write(audio_record)
@@ -120,20 +181,32 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
             except sr.RequestError as e:
                 st.error('錯誤：無法連接服務')
                 
-        # session state
-        if len(msgs.messages) == 0:
-            msgs.add_ai_message("你好，我們有什麼可以幫您的？")
+                
+        #user_query = st.chat_input("請在這輸入...") 
+            
         
         for msg in msgs.messages:
-                container1.chat_message(avatars[msg.type]).write(msg.content)
+            container1.chat_message(avatars[msg.type]).write(msg.content)
 
         if user_query:
             container1.chat_message("user").write(user_query)
             with container1.chat_message("assistant"):
-                    with st.spinner("Typing..."):
-                        response = coversation_chain.run(user_query)
-                        st.write(response)
+                with st.spinner("生成需時，請耐心等候"):
+                    response = coversation_chain.run(user_query)
+                    st.write(response)
+                    
+                # sentiment_mapping = ["one", "two", "three", "four", "five"]
+                # selected = st.feedback("stars")
 
+                # if selected is not None:
+                #     if selected <= 3:
+                #         user_query = f"用户给你 {selected} 星，代表对你的回应不满意，你要向用户致歉，并要更耐心、更详细地回应用户的问题。" + user_query
+                #         container1.chat_message("user").write(user_query)
+                #         with container1.chat_message("assistant"):
+                #             with st.spinner("生成需時，請耐心等候"):
+                #                 response = coversation_chain.run(user_query)
+                #                 st.write(response)
+                #     st.markdown(f"You selected {sentiment_mapping[selected]} star(s).")
 else:
     st.info("請先登錄")
     st.switch_page("index.py")

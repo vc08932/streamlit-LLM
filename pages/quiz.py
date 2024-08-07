@@ -1,32 +1,10 @@
 import streamlit as st 
 import json
 import time
-import logging
 
-
-logger = logging.getLogger("Streamlit")
-logger.setLevel(logging.INFO)
-handler = logging.FileHandler('streamlit.log')
-formatter = logging.Formatter("%(asctime)s %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
-# logged_messages = set()
-
-# def log_info(log_message):
-#     if log_message not in logged_messages:
-#         logger.info(log_message)
-#         logged_messages.add(log_message)
-
-
-# if 'logger' not in st.session_state:
-#     st.session_state['logger'] = st_log.create_logger(name = 'app', level = 'INFO')
-# logger = st.session_state['logger']
-# print(st.session_state['logger'])
-   
-# def redirect():
-#     st.switch_page("pages/chatbot.py")
-st.set_page_config(initial_sidebar_state = "collapsed")    
+st.set_page_config(page_title="Quiz",
+                   page_icon="📕",
+                   initial_sidebar_state = "collapsed")    
         
 if "level" not in st.session_state:
     st.session_state.level = []
@@ -77,10 +55,6 @@ else:
             if score >= 5:
                 st.page_link("pages/chatbot.py", label="**你已經是熟練級別了**")
                 st.session_state.level.append("expert")
-                
-            elif score >=3 :
-                st.page_link("pages/chatbot.py", label="**你已經到了已入門等級了**")
-                st.session_state.level.append("intermediate")
                 
             elif score >=0:
                 st.page_link("pages/chatbot.py", label="**你看來不是很熟悉大語言模型了**")

@@ -1,5 +1,5 @@
 openai
-streamlit 
+streamlit == 1.37.0
 SpeechRecognition
 langchain==0.0.345
-streamlit-audiorecorder
+audio_recorder_streamlit
