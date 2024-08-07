@@ -141,6 +141,7 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
                 "你在用什麼平台",
                 ("Web", "Windows", "MacOS", "iPad OS", "Android","iOS","Others"),
                 placeholder = "你在用什麼平台",
+                index = None
             )
         
             service = st.text_input("你使用什麼軟件 / 網站")
