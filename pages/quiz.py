@@ -20,11 +20,10 @@ else:
         
         score = 0
         
-        with open("quiz_question.json",encoding='utf-8') as file:
-            ques=json.load(file,strict=False) # strict=False allows to store '\n','\t' etc. 
+        with open("src/quiz_question.json",encoding = 'utf-8') as file:
+            ques=json.load(file,strict = False) # strict=False allows to store '\n','\t' etc. 
         
         for i in ("Q1","Q2","Q3","Q4","Q5","Q6"):
-            #st.write(ques[i]["Choice"][1])
             question = st.radio(
                 f"**{str(i)[1]} . {ques[i]["Question"]}**", 
                 [ques[i]["Choice"][k] for k in range(4)],
@@ -34,13 +33,9 @@ else:
             if question == ques[i]["Choice"][ans_index]:
                 st.write(":red[✅ 恭喜你，答對了]")
                 score += 1
-                logger.info(f"QuizAns: {question}")
-                #log_info(f"QuizAns: {question}")
+
                 
             elif question is not None:
-                logger.info(f"QuizAns: {question}")
-                
-                #log_info(f"QuizAns: {question}")
                 st.write(":grey[❌ 沒關係，再接再厲]")
                 st.markdown(f'正确答案是 **{ques[i]["Choice"][ans_index]}**')
                      
@@ -57,7 +52,7 @@ else:
                 st.session_state.level.append("expert")
                 
             elif score >=0:
-                st.page_link("pages/chatbot.py", label="**你看來不是很熟悉大語言模型了**")
+                st.page_link("pages/chatbot.py", label="**你看來不是很熟悉大語言模型**")
                 st.session_state.level.append("begin")
 
             st.toast("請點擊按鈕跳到指定頁面，否則將在 10 秒後自動跳轉",icon = "💬")

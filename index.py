@@ -48,7 +48,7 @@ if st.session_state["login_status"] == True:
     
     level_index = {"🟡 不懂":"begin", "🔵 熟練": "expert"}
     
-    st.session_state["level"] = None # Initiate
+    st.session_state["level"] = [] # Initiate
     
     if level is not None:
         st.session_state["level"] = level_index[level]

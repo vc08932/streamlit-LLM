@@ -135,30 +135,45 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
         
     
         with st.sidebar:
-            version_disabled = False
+            input_disabled = st.checkbox("關閉輸入框", help = "點擊關閉側邊欄的輸入框")
+            
             
             platform = st.selectbox(
                 "你在用什麼平台",
                 ("Web", "Windows", "MacOS", "iPad OS", "Android","iOS","Others"),
                 placeholder = "你在用什麼平台",
-                index = None
+                index = None,
+                disabled = input_disabled
             )
         
-            service = st.text_input("你使用什麼軟件 / 網站")
+            service = st.text_input("你使用什麼軟件 / 網站", 
+                                    value = None, 
+                                    disabled = input_disabled)
             
-            if platform == "Web":
+            if platform == "Web" or input_disabled == True:
                 version_disabled = True
                 version = None
                 
-            version = st.text_input("具體版本號（如有）是多少？", disabled = version_disabled)
+            else:
+                version_disabled = False
+                
+            version = st.text_input("具體版本號（如有）是多少？", 
+                                    value = None, 
+                                    disabled = version_disabled)
 
             
         detail = st.chat_input("描述具體遇到的困難，請附上例子和報錯代碼（如有），以及你嘗試過的解決方法")
 
-        if detail :
+        if detail == True and input_disabled == False:
+            print(f"原文：背景：我在使用{service}的{platform}端时遇到困难，版本號為{version}；\n細節： {detail}。")
+            
             user_query = llm_caller.call(f"潤色一下這句提示詞，使這句話的用詞和語氣像真实的人一样自然，刪除無用的句子（即是值為 None 的句子），但避免直接修改句子意思和信息量，直接輸出潤色後的結果即可。如果細節與背景明顯無關聯或者細節與背景相衝突，可以忽略和刪除背景，並且改進和優化提示詞。",
             f"背景：我在使用{service}的{platform}端时遇到困难，版本號為{version}；\n細節： {detail}。")
-    
+            
+        elif input_disabled == True:
+            user_query = detail
+            
+            
         audio_record = audio_recorder(text="",icon_size="2x") 
         voice_to_text = "" # Initiate the string
     
@@ -210,6 +225,13 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
                 #                 response = coversation_chain.run(user_query)
                 #                 st.write(response)
                 #     st.markdown(f"You selected {sentiment_mapping[selected]} star(s).")
+        elif audio_record and recognizer_state == "success":
+            container1.chat_message("user").write(voice_to_text)
+            with container1.chat_message("assistant"):
+                with st.spinner("生成需時，請耐心等候"):
+                    response = coversation_chain.run(voice_to_text)
+                    st.write(response)
+                    recognizer_state = "finish"
 else:
     st.info("請先登錄")
     st.switch_page("index.py")
