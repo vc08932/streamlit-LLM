@@ -83,8 +83,6 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
         container1 = st.container(height = None) # Size varies with the content
         
         if len(msgs.messages) == 0:
-            print(st.session_state["level"])
-            
             if st.session_state["level"] == "expert":
             # session state
             
@@ -167,14 +165,16 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
         detail = st.chat_input("描述具體遇到的困難，請附上例子和報錯代碼（如有），以及你嘗試過的解決方法")
         
         
-        if detail and input_disabled == False:
-            print(f"原文：背景：我在使用{service}的{platform}端时遇到困难，版本號為{version}；\n細節： {detail}。")
+        if detail :
+            if input_disabled == False and (service or platform or version) is not None:
+                
+                print(f"原文：背景：我在使用{service}的{platform}端时遇到困难，版本號為{version}；\n細節： {detail}。")
+                
+                user_query = llm_caller.call(f"潤色一下這句提示詞，使這句話的用詞和語氣像真实的人一样自然，刪除無用的句子（即是值為 None 的句子），但避免修改句子意思和信息量，直接輸出潤色後的結果即可。如果細節與背景明顯無關聯或者細節與背景相衝突，可以忽略和刪除背景，並且改進和優化提示詞。",
+                f"背景：我在使用{service}的{platform}端时遇到困难，版本號為{version}；\n細節： {detail}。")
             
-            user_query = llm_caller.call(f"潤色一下這句提示詞，使這句話的用詞和語氣像真实的人一样自然，刪除無用的句子（即是值為 None 的句子），但避免修改句子意思和信息量，直接輸出潤色後的結果即可。如果細節與背景明顯無關聯或者細節與背景相衝突，可以忽略和刪除背景，並且改進和優化提示詞。",
-            f"背景：我在使用{service}的{platform}端时遇到困难，版本號為{version}；\n細節： {detail}。")
-            
-        elif input_disabled == True:
-            user_query = detail
+            else:
+                user_query = detail
             
             
         audio_record = audio_recorder(text="",icon_size="2x") 
@@ -209,23 +209,29 @@ if "login_status" in st.session_state and st.session_state["login_status"] == Tr
 
         if user_query:
             container1.chat_message("user").write(user_query)
+            
             with container1.chat_message("assistant"):
                 with st.spinner("生成需時，請耐心等候"):
                     response = coversation_chain.run(user_query)
                     st.write(response)
                     
-                # sentiment_mapping = ["one", "two", "three", "four", "five"]
-                # selected = st.feedback("stars")
-
-                # if selected is not None:
-                #     if selected <= 3:
-                #         user_query = f"用户给你 {selected} 星，代表对你的回应不满意，你要向用户致歉，并要更耐心、更详细地回应用户的问题。" + user_query
-                #         container1.chat_message("user").write(user_query)
-                #         with container1.chat_message("assistant"):
-                #             with st.spinner("生成需時，請耐心等候"):
-                #                 response = coversation_chain.run(user_query)
-                #                 st.write(response)
-                #     st.markdown(f"You selected {sentiment_mapping[selected]} star(s).")
+            # comment = st.feedback("stars")
+            # print(comment)
+                
+            # if comment is not None:
+            #     print(comment)
+                
+            # if comment <= 3:
+            #     user_query = f"用户给你 {selected} 星，代表对你的回应不满意，你要向用户致歉，并要更耐心、更详细地回应用户的问题。{user_query}"
+                
+            #     container1.chat_message("user").write(user_query)
+                
+            #     print("user_query :" + user_query)
+                
+            #     with container1.chat_message("assistant"):
+            #         with st.spinner("生成需時，請耐心等候"):
+            #             response = coversation_chain.run(user_query)
+            #             st.write(response)
                 
         elif audio_record and recognizer_state == "success":
             container1.chat_message("user").write(voice_to_text)
